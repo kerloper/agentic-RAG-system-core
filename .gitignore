@@ -1,0 +1,62 @@
+# Dependencies
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+
+# Build/Distribution
+dist/
+build/
+.next/
+out/
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# OS files
+.DS_Store
+Thumbs.db
+Desktop.ini
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.iml
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+.sublime-project
+.sublime-workspace
+*.sublime-*
+
+# Local development
+.cache/
+.temp/
+tmp/
+
+# Docker volumes (local)
+qdrant_storage/
+ollama_models/
+
+# OS temp files
+*.tmp
+*.bak
+
+# Keep these tracked
+!.gitkeep
+!.gitignore
