@@ -1,12 +1,17 @@
 import express from 'express';
 import config from './config.js';
 import { ensureCollection } from './db/qdrantClient.js';
+import { log, error as logError } from '../core/utils/logger.js';
+import { requestLogger } from './middleware/requestLogger.js';
+import errorHandler from './middleware/errorHandler.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+let server;
 
 // Middleware
 app.use(express.json());
+app.use(requestLogger);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
@@ -20,17 +25,41 @@ app.get('/health', (req, res) => {
 import askRoutes from './routes/ask.js';
 app.use('/api', askRoutes);
 
-// Initialize Qdrant collection before starting server
+// Global error handler
+app.use(errorHandler);
+
+function startServer() {
+  server = app.listen(PORT, () => {
+    log(`Kerloper RAG API running on port ${PORT}`);
+  });
+}
+
+function handleShutdown() {
+  log('Shutting down gracefully...');
+  if (server) {
+    server.close(() => {
+      log('Server closed');
+      process.exit(0);
+    });
+
+    setTimeout(() => {
+      logError('Force shutting down after timeout');
+      process.exit(1);
+    }, 10000);
+  } else {
+    process.exit(0);
+  }
+}
+
+process.on('SIGINT', handleShutdown);
+process.on('SIGTERM', handleShutdown);
+
 ensureCollection()
   .then(() => {
-    app.listen(PORT, () => {
-      console.log(`Kerloper RAG API running on port ${PORT}`);
-    });
+    startServer();
   })
-  .catch((error) => {
-    console.error('Failed to initialize Qdrant collection:', error.message);
-    console.log('Starting server anyway...');
-    app.listen(PORT, () => {
-      console.log(`Kerloper RAG API running on port ${PORT}`);
-    });
+  .catch((initError) => {
+    logError(`Failed to initialize Qdrant collection: ${initError.message}`);
+    log('Starting server anyway...');
+    startServer();
   });
