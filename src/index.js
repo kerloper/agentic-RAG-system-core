@@ -1,5 +1,6 @@
 import express from 'express';
 import config from './config.js';
+import { ensureCollection } from './db/qdrantClient.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -19,7 +20,17 @@ app.get('/health', (req, res) => {
 import askRoutes from './routes/ask.js';
 app.use('/api', askRoutes);
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`Kerloper RAG API running on port ${PORT}`);
-});
+// Initialize Qdrant collection before starting server
+ensureCollection()
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log(`Kerloper RAG API running on port ${PORT}`);
+    });
+  })
+  .catch((error) => {
+    console.error('Failed to initialize Qdrant collection:', error.message);
+    console.log('Starting server anyway...');
+    app.listen(PORT, () => {
+      console.log(`Kerloper RAG API running on port ${PORT}`);
+    });
+  });
