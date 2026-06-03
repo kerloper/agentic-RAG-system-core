@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import config from './config.js';
 import { ensureCollection } from './db/qdrantClient.js';
 import { log, error as logError } from '../core/utils/logger.js';
@@ -10,6 +11,7 @@ const PORT = process.env.PORT || 3000;
 let server;
 
 // Middleware
+app.use(cors());
 app.use(express.json());
 app.use(requestLogger);
 
